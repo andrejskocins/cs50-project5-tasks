@@ -60,29 +60,7 @@ def register(request):
 
 
 def index(request):
-    # Get sort parameters from URL
-    sort_by = request.GET.get('sort', 'start_time')
-    order = request.GET.get('order', 'desc')
-    
-    # Map URL parameters to model fields
-    sort_fields = {
-        'title': 'title',
-        'author': 'author__username',
-        'start_time': 'start_time',
-        'due_date': 'due_date'
-    }
-    
-    # Get the field to sort by
-    field = sort_fields.get(sort_by, 'start_time')
-    
-    # Add - prefix for descending order
-    if order == 'desc':
-        field = f'-{field}'
-    
-    tasks = Task.objects.order_by(field)
-    
+    tasks = Task.objects.all()
     return render(request, "capstone/index.html", {
-        "tasks": tasks,
-        "current_sort": sort_by,
-        "current_order": order
+        "tasks": tasks
     })

@@ -1,9 +1,59 @@
 {% extends "capstone/layout.html" %}
 
 {% block script %}
-
-
-
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentSort = { column: null, ascending: true };
+    
+    function sortTable(column, index) {
+        const taskList = document.querySelector('.task-list');
+        const items = Array.from(document.querySelectorAll('.task-item'));
+        
+        // Toggle sort direction if clicking same column
+        if (currentSort.column === column) {
+            currentSort.ascending = !currentSort.ascending;
+        } else {
+            currentSort.column = column;
+            currentSort.ascending = true;
+        }
+        
+        // Sort the items
+        items.sort((a, b) => {
+            let aVal = a.children[index].textContent.trim();
+            let bVal = b.children[index].textContent.trim();
+            
+            // Handle dates
+            if (column === 'start_time' || column === 'due_date') {
+                aVal = new Date(aVal);
+                bVal = new Date(bVal);
+            }
+            
+            if (aVal < bVal) return currentSort.ascending ? -1 : 1;
+            if (aVal > bVal) return currentSort.ascending ? 1 : -1;
+            return 0;
+        });
+        
+        // Update the DOM
+        items.forEach(item => taskList.appendChild(item));
+        
+        // Update arrows
+        document.querySelectorAll('.sortable').forEach(el => {
+            el.innerHTML = el.innerHTML.replace(/▲|▼/g, '').trim();
+        });
+        document.querySelector(`[data-column="${column}"]`).innerHTML += 
+            currentSort.ascending ? ' ▲' : ' ▼';
+    }
+    
+    document.querySelectorAll('.sortable').forEach(el => {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            const column = this.dataset.column;
+            const index = parseInt(this.dataset.index);
+            sortTable(column, index);
+        });
+    });
+});
+</script>
 {% endblock %}
 
 {% block body %}
@@ -11,26 +61,10 @@
 <div class="task-list">
     <div class="task-header flex-container">
         <div></div>
-        <div class="sortable">
-            <a href="?sort=title&order={% if current_sort == 'title' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                TASK {% if current_sort == 'title' %}{% if current_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
-            </a>
-        </div>
-        <div class="sortable">
-            <a href="?sort=author&order={% if current_sort == 'author' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                AUTHOR {% if current_sort == 'author' %}{% if current_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
-            </a>
-        </div>
-        <div class="sortable">
-            <a href="?sort=start_time&order={% if current_sort == 'start_time' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                START DATE {% if current_sort == 'start_time' %}{% if current_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
-            </a>
-        </div>
-        <div class="sortable">
-            <a href="?sort=due_date&order={% if current_sort == 'due_date' and current_order == 'asc' %}desc{% else %}asc{% endif %}">
-                DUE DATE {% if current_sort == 'due_date' %}{% if current_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
-            </a>
-        </div>
+        <div class="sortable" data-column="title" data-index="1">TASK</div>
+        <div class="sortable" data-column="author" data-index="2">AUTHOR</div>
+        <div class="sortable" data-column="start_time" data-index="3">START DATE</div>
+        <div class="sortable" data-column="due_date" data-index="4">DUE DATE</div>
     </div>
     {% for task in tasks %}
         <div class="task-item flex-container {% if task.completed %}completed{% endif %}">
