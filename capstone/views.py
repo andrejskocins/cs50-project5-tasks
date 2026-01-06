@@ -85,3 +85,24 @@ def create_task(request):
             })
     # GET request - redirect to index
     return HttpResponseRedirect(reverse("index"))
+
+def toggle_task(request, task_id):
+    if request.method == "POST":
+        try:
+            task = Task.objects.get(id=task_id)
+            task.completed = not task.completed
+            task.save()
+            return JsonResponse({"success": True})
+        except Task.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Task not found"}, status=404)
+    return JsonResponse({"success": False, "error": "Invalid method"}, status=400)
+
+def delete_task(request, task_id):
+    if request.method == "POST":
+        try:
+            task = Task.objects.get(id=task_id)
+            task.delete()
+            return JsonResponse({"success": True})
+        except Task.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Task not found"}, status=404)
+    return JsonResponse({"success": False, "error": "Invalid method"}, status=400)
